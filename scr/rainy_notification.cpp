@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include "notification.hpp"
+#include "rainy_notification.hpp"
 
 #include <memory>
 #include <assert.h>
@@ -500,13 +500,13 @@ namespace util {
             return e.code();
         }
     }
-} // namespace util
+}
 
-notification::notification() : is_initialized_(false), has_winrt_initialized_(false) {}
+notification::notification() {}
 
 notification::~notification() {
     clear();
-    if (has_winrt_initialized_) {
+    if (status[static_cast<int>(notification_status::has_winrt_initialized)]) {
         CoUninitialize();
     }
 }
@@ -585,7 +585,7 @@ utility::shortcut_result utility::create_shortcut(shortcut_policy policy,std::ws
 }
 
 bool notification::init(notification_error* error) {
-    is_initialized_ = false;
+    status[static_cast<int>(notification_status::is_initialized)] = false;
     if (shortcut_policy_ == utility::shortcut_policy::ignore) {
         if (is_enable_modern_features()) {
             set_error(error, notification_error::shell_link_not_created);
@@ -598,7 +598,8 @@ bool notification::init(notification_error* error) {
         throw std::runtime_error("Error while initializing, did you set up a valid AUMI and App name?");
         return false;
     }
-    if (static_cast<int>(utility::create_shortcut(shortcut_policy_, appname_, aumi_, has_winrt_initialized_)) < 0) {
+    if (static_cast<int>(utility::create_shortcut(shortcut_policy_, appname_, aumi_,
+                                                  status[static_cast<int>(notification_status::has_winrt_initialized)])) < 0) {
         set_error(error, notification_error::shell_link_not_created);
         return false;
     }
@@ -607,12 +608,12 @@ bool notification::init(notification_error* error) {
         throw std::runtime_error("Error while attaching the AUMI to the current proccess.");
         return false;
     }
-    is_initialized_ = true;
-    return is_initialized_;
+    status[static_cast<int>(notification_status::is_initialized)] = true;
+    return true;
 }
 
 bool notification::is_initialized() const {
-    return is_initialized_;
+    return status[static_cast<int>(notification_status::is_initialized)];
 }
 
 std::wstring const& notification::app_name() const {
@@ -728,7 +729,6 @@ std::int64_t notification::show_impl(const notification_template& toast, std::sh
         winrt::Windows::Foundation::DateTime expiration_time = now + std::chrono::milliseconds(relative_expiration);
         notification->ExpirationTime(expiration_time);
     }
-
     GUID guid;
     HRESULT hr_guid = CoCreateGuid(&guid);
     id = guid.Data1;
@@ -784,11 +784,11 @@ bool notification::hide(const std::int64_t id) {
 }
 
 void rainy::notification::set_modern_status(const bool enable) noexcept {
-    enable_modern_features_ = enable;
+    status[static_cast<int>(notification_status::enable_modern_features)] = enable;
 }
 
 bool rainy::notification::is_enable_modern_features() const noexcept {
-    return enable_modern_features_;
+    return status[static_cast<int>(notification_status::enable_modern_features)];
 }
 
 void notification::clear() {
@@ -803,14 +803,6 @@ void notification::clear() {
     }
     notifys.clear();
 }
-
-//
-// Available as of Windows 10 Anniversary Update
-// Ref: https://docs.microsoft.com/en-us/windows/uwp/design/shell/tiles-and-notifications/adaptive-interactive-toasts
-//
-// NOTE: This will add a new text field, so be aware when iterating over
-//       the toast's text fields or getting a count of them.
-//
 
 HRESULT utility::xml_notifcation_field::set_attribution_text_field( std::wstring_view text) {
     util::create_element(xml, L"binding", L"text", { L"placement" });

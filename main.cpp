@@ -1,4 +1,4 @@
-#include "notification.hpp"
+#include "include/rainy_notification.hpp"
 
 int main() {
     rainy::notification notification;

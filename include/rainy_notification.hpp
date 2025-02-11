@@ -21,6 +21,7 @@
 #include <Psapi.h>
 #include <ShlObj.h>
 #include <roapi.h>
+#include <bitset>
 #include <propvarutil.h>
 #include <functiondiscoverykeys.h>
 #include <iostream>
@@ -780,10 +781,14 @@ namespace rainy {
             bool _ready_for_deletion{false};
             bool _previously_token_removed{false};
         };
+        enum class notification_status {
+            is_initialized,
+            has_winrt_initialized,
+            enable_modern_features,
+            size
+        };
 
-        bool is_initialized_{false};
-        bool has_winrt_initialized_{false};
-        bool enable_modern_features_{true};
+        std::array<bool, static_cast<int>(notification_status::size)> status{false, false, true};
         utility::shortcut_policy shortcut_policy_{utility::shortcut_policy::require_create};
         std::wstring appname_{};
         std::wstring aumi_{};
