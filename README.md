@@ -64,7 +64,10 @@ https://github.com/mohabouje/WinToast
 
 This library supports CMake build system. Please ensure that your project is built with `C++ 17`, as WinRT requires `C++ 17` to work properly.
 
+### How to Use
+This library already provides annotated documentation, but it's in Chinese. However, from the function names, you can generally infer their purpose. Additionally, all names, except for templates, follow the snake_case naming convention.
 
+The following is just a demo, but it also demonstrates some basic features.
 
 ```cpp
 #include "include/rainy_notification.hpp"
