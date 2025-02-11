@@ -21,7 +21,6 @@
 #include <Psapi.h>
 #include <ShlObj.h>
 #include <roapi.h>
-#include <bitset>
 #include <propvarutil.h>
 #include <functiondiscoverykeys.h>
 #include <iostream>
@@ -218,24 +217,48 @@ namespace rainy {
             notification_template *this_;
         };
 
+        /**
+         * @brief 默认构造函数，以text01模板类型初始化
+        */
         notification_template() : notification_template(notification_template_type::text01) {
         }
 
+        /**
+         * @brief 构造函数，以指定模板类型初始化
+         * @param type 指定的模板类型
+         */
         notification_template(notification_template_type type) : template_type_(type), has_input_(false), actions(this) {
         }
 
+        /**
+         * @brief 设置第一行的文本内容
+         * @param text 文本内容
+         */
         void set_first_line(std::wstring_view text) noexcept {
             set_text_field(text, textfield::first_line);
         }
 
+        /**
+         * @brief 设置第二行的文本内容
+         * @param text 文本内容
+         */
         void set_second_line(std::wstring_view text) noexcept {
             set_text_field(text, textfield::second_line);
         }
 
+        /**
+         * @brief 设置第三行的文本内容
+         * @param text 文本内容
+         */
         void set_third_line(std::wstring_view text) noexcept {
             set_text_field(text, textfield::third_line);
         }
 
+        /**
+         * @brief 设置文本字段内容
+         * @param text 文本内容
+         * @param pos 文本字段位置
+         */
         void set_text_field(std::wstring_view text, textfield pos) noexcept {
             const auto position = static_cast<std::size_t>(pos);
             if (internals::text_fields_count[static_cast<std::size_t>(template_type_)] < position) {
@@ -244,20 +267,56 @@ namespace rainy {
             text_fields_[position] = text;
         }
 
+        /**
+         * @brief 设置归属信息
+         * @param attribution_text 归属信息
+         */
+        void set_attribution_text(std::wstring_view attribution_text) noexcept {
+            attribution_text_ = attribution_text;
+        }
+
+        /**
+         * @brief 设置图像路径
+         * @param img_path 图像路径
+         * @param crop_hint 裁剪提示
+         */
+        void set_image_path(std::wstring_view img_path, crop_hint crop_hint = crop_hint::square) noexcept {
+            image_path_ = img_path;
+            crop_hint_ = crop_hint;
+        }
+
+        /**
+         * @brief 获取归属信息
+         * @return 归属信息
+        */
         void attribution_text(std::wstring_view attribution_text) {
             attribution_text_ = attribution_text;
         }
 
+        /**
+         * @brief 设置Hero Image路径
+         * @param img_path Hero Image路径
+         * @param inline_image 是否内嵌图像
+         */
         void image_path(std::wstring_view img_path, crop_hint crop_hint = crop_hint::square) {
             image_path_ = img_path;
             crop_hint_ = crop_hint;
         }
 
+        /**
+         * @brief 设置Hero Image路径
+         * @param img_path Hero Image路径
+         * @param inline_image 是否内嵌图像
+        */
         void hero_image_path(std::wstring_view img_path, bool inline_image = false) {
             hero_image_path_ = img_path;
             inline_hero_image = inline_image;
         }
 
+        /**
+         * @brief 设置音频路径
+         * @param audio_path 音频路径
+         */
         void audio_path(audio_system_file audio) {
             static const std::unordered_map<audio_system_file, std::wstring> preset_audio_files = {
                 {audio_system_file::default_sound, L"ms-winsoundevent:Notification.Default"},
@@ -295,18 +354,34 @@ namespace rainy {
             }
         }
 
+        /**
+         * @brief 设置音频路径
+         * @param audio_path 音频路径
+        */
         void audio_path(std::wstring_view audio_path) {
             audio_path_ = audio_path;
         }
 
+        /**
+         * @brief 设置音频选项
+         * @param audio_option 音频选项
+        */
         void audio_option(audio_option_t audio_option) {
             audio_option_ = audio_option;
         }
 
+        /**
+         * @brief 设置场景
+         * @param scenario 场景
+        */
         std::wstring_view scenario() noexcept {
             return scenario_;
         }
 
+        /**
+         * @brief 设置场景
+         * @param scenario 场景
+        */
         void scenario(scenario_t scenario) noexcept {
             switch (scenario) {
                 case scenario_t::normal:
@@ -324,12 +399,21 @@ namespace rainy {
             }
         }
 
+        /**
+         * @brief 设置是否允许用户输入
+         * @param enable 是否允许用户输入
+         * @note 如果没有操作按钮，则默认允许用户输入
+        */
         void toggle_input(const bool enable = true) noexcept {
             if (actions.empty()) {
                 has_input_ = true;
             }
         }
 
+        /**
+         * @brief 检查是否允许用户输入
+         * @return true 如果允许用户输入
+        */
         bool has_input() const noexcept {
             return has_input_;
         }
@@ -463,12 +547,18 @@ namespace rainy {
             return has_hero_image() || crop_hint_ == crop_hint::circle;
         }
 
-
+        /**
+         * @brief 检查当前模板中，hero image是否内嵌在通知中
+         * @return 指示hero image是否内嵌在通知中
+        */
         RAINY_NODISCARD bool is_inline_hero_image() const noexcept {
             return inline_hero_image;
         }
 
-
+        /**
+         * @brief 检查当前模板是否为圆形裁剪
+         * @return 指示是否为圆形裁剪
+        */
         RAINY_NODISCARD bool is_crop_hint_circle() const noexcept {
             return crop_hint_ == crop_hint::circle;
         }
@@ -501,10 +591,33 @@ namespace rainy {
         };
 
         virtual ~notification_handler() = default;
+        
+        /**
+         * @brief 通知被激活
+        */
         virtual void activated() const = 0;
+
+        /**
+         * @brief 通知被激活，并带有操作按钮的索引
+         * @param action_idx 操作按钮的索引
+        */
         virtual void activated(int action_idx) const = 0;
+
+        /**
+         * @brief 通知被激活，并带有用户输入的文本
+         * @param response 用户输入的文本
+        */
         virtual void activated(const std::wstring_view response) const = 0;
+
+        /**
+         * @brief 通知被关闭
+         * @param state 关闭原因
+        */
         virtual void dismissed(dismissal_reason state) const = 0;
+
+        /**
+         * @brief 通知发送失败
+        */
         virtual void failed() const = 0;
     };
 
@@ -647,23 +760,111 @@ namespace rainy {
     public:
         notification();
         ~notification();
+
+        /**
+         * @brief 检查是否支持Modern Toast
+         * @return 如果支持Modern Toast，返回true，否则返回false
+        */
         static bool is_supporting_modern_features();
+
+        /**
+         * @brief 检查是否为Win10 Anniversary Update或更高版本
+         * @return 如果为Win10 Anniversary Update或更高版本，返回true，否则返回false
+        */
         static bool is_win10_anniversary_or_higher();
+
+        /**
+         * @brief 构建应用程序的AppUserModelID
+         * @param company_name 公司名称
+         * @param product_name 产品名称
+         * @param sub_product 子产品名称
+         * @param version_information 版本信息
+         * @return 返回应用程序的AppUserModelID
+        */
         static std::wstring make_aumi(std::wstring const &company_name, std::wstring const &product_name,
                                       std::wstring const &sub_product = {}, std::wstring const &version_information = {});
+        
+        /**
+         * @brief 获取错误信息
+         * @param error 错误码
+         * @return 返回对应错误信息
+        */
         static std::wstring const &strerror(notification_error error);
+
+        /**
+         * @brief 初始化通知系统
+         * @param error 错误码
+         * @return 如果初始化成功，返回true，否则返回false。如果error不为nullptr，errno还会附带错误信息。
+        */
         bool init(notification_error *error = nullptr);
+
+        /**
+         * @brief 检查是否初始化成功
+         * @return 如果初始化成功，返回true，否则返回false
+        */
         bool is_initialized() const;
+
+        /**
+         * @brief 隐藏通知，并返回是否成功
+         * @param id 通知ID（由show()返回）
+         * @return 如果成功隐藏通知，返回true，否则返回false
+        */
         bool hide(const std::int64_t id);
+
+        /**
+         * @brief 设置现代特性的状态
+         * @param enable 是否启用
+        */
         void set_modern_status(const bool enable) noexcept;
+
+        /**
+         * @brief 获取现代特性的状态
+         * @return 指示是否启用
+        */
         bool is_enable_modern_features() const noexcept;
+
+        /**
+         * @brief 清除所有通知
+         */        
         void clear();
-        std::wstring const &app_name() const;
-        std::wstring const &app_user_model_id() const;
+
+        /**
+         * @brief 获取通知的应用名称
+         * @return 返回通知的应用名称
+        */
+        const std::wstring &app_name() const;
+
+        /**
+         * @brief 获取通知的AppUserModelID
+         * @return 返回通知的AppUserModelID
+        */
+        const std::wstring &app_user_model_id() const;
+
+        /**
+         * @brief 设置通知的AppUserModelID
+         * @param aumi AppUserModelID
+        */
         void set_aumi(std::wstring_view aumi);
+
+        /**
+         * @brief 设置通知的应用名称
+         * @param app_name 应用名称
+        */
         void set_app_name(std::wstring const &app_name);
+
+        /**
+         * @brief 设置快捷方式的创建策略
+         * @param policy 策略
+        */
         void set_shortcut_policy(utility::shortcut_policy policy);
 
+        /**
+         * @brief 显示通知，并返回通知ID
+         * @tparam EventHandler 通知模板（必须继承自notification_handler，且必须实现相应的方法）。由show自动创建实例并管理生命周期
+         * @param notification 通知模板
+         * @param error 错误码
+         * @return 返回通知ID，如果失败，返回-1。如果error不为nullptr，errno还会附带错误信息。
+        */
         template <typename EventHandler, std::enable_if_t<std::is_base_of_v<notification_handler, EventHandler>, int> = 0>
         std::int64_t show(const notification_template &notification, notification_error *error = nullptr) {
             try {
@@ -673,6 +874,13 @@ namespace rainy {
             }
         }
 
+        /**
+         * @brief 显示通知，并返回通知ID
+         * @param notification 通知模板
+         * @param handler 通知处理器（必须继承自notification_handler，且必须实现相应的方法）
+         * @param error 错误码
+         * @return 返回通知ID，如果失败，返回-1。如果error不为nullptr，errno还会附带错误信息。
+        */
         template <typename EventHandler, std::enable_if_t<std::is_base_of_v<notification_handler, EventHandler>, int> = 0>
         std::int64_t show(const notification_template &notification, EventHandler &handler, notification_error *error = nullptr) {
             try {
@@ -682,6 +890,14 @@ namespace rainy {
             }
         }
 
+        /**
+         * @brief 显示通知，并返回通知ID
+         * @tparam EventHandler 通知模板
+         * @param notification 通知模板
+         * @param handler 通知处理器，可以是一个仿函数或一个lambda表达式。必须支持const rainy::notification_event &这一参数的传入
+         * @param error 错误码
+         * @return 返回通知ID，如果失败，返回-1。如果error不为nullptr，errno还会附带错误信息。
+        */
         template <typename EventHandler,
                   typename = std::void_t<decltype(std::declval<EventHandler>()(std::declval<const rainy::notification_event &>()))>>
         std::int64_t show(const notification_template &notification, EventHandler handler, notification_error *error = nullptr) {

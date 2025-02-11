@@ -2,16 +2,15 @@
 
 project ("rainy-notification")
 
-add_executable (rainy-notification  
+add_library(rainy-notification 
 	"include/rainy_notification.hpp"
-	"scr/rainy_notification.cpp"
-	"main.cpp"
+	"src/rainy_notification.cpp"
 )
 
 target_include_directories(rainy-notification PRIVATE ${PROJECT_SOURCE_DIR}/include)
 
+target_sources(rainy-notification PRIVATE src/rainy_notification.cpp)
+
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET rainy-notification PROPERTY CXX_STANDARD 20)
 endif()
-
-add_compile_options(/utf-8)

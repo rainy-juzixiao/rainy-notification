@@ -616,11 +616,11 @@ bool notification::is_initialized() const {
     return status[static_cast<int>(notification_status::is_initialized)];
 }
 
-std::wstring const& notification::app_name() const {
+const std::wstring& notification::app_name() const {
     return appname_;
 }
 
-std::wstring const& notification::app_user_model_id() const {
+const std::wstring& notification::app_user_model_id() const {
     return aumi_;
 }
 
